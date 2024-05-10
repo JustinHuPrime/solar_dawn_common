@@ -1,0 +1,19 @@
+[package]
+name = "solar_dawn_common"
+version = "0.3.0"
+authors = ["Justin Hu <justin.hu@alumni.ubc.ca>"]
+edition = "2021"
+description = "A simultaneous turn resolution 4X inspired by High Frontier and Triplanetary."
+homepage = "https://github.com/JustinHuPrime/SolarDawn#readme"
+repository = "https://github.com/JustinHuPrime/SolarDawn"
+license = "AGPL-3.0-or-later"
+
+[features]
+server = ["dep:rand", "dep:rand_chacha"]
+client = []
+
+[dependencies]
+rand = { version = "0.8.5", optional = true }
+rand_chacha = { version = "0.3.1", optional = true }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
