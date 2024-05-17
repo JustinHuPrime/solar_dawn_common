@@ -57,7 +57,9 @@ pub mod stack;
 pub mod vec2;
 
 /// The current phase within the round
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug, Clone, Copy)]
 pub enum Phase {
     Economic,
     Ordnance,
@@ -66,7 +68,9 @@ pub enum Phase {
 }
 
 /// The state of the game
-#[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug)]
 pub struct GameState {
     pub major_bodies: HashMap<EntityId, MajorBody>,
     pub minor_bodies: HashMap<EntityId, MinorBody>,
@@ -82,7 +86,9 @@ impl GameState {
 }
 
 /// A player ID
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PlayerId(u8);
 impl From<u8> for PlayerId {
     fn from(value: u8) -> Self {
@@ -96,7 +102,13 @@ impl From<PlayerId> for u8 {
 }
 
 /// An entity ID
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+///
+/// This is technically namespaced, but that isn't exposed at the type level
+#[cfg_attr(
+    any(feature = "client", feature = "server"),
+    derive(Serialize, Deserialize)
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct EntityId(u64);
 impl From<u64> for EntityId {
     fn from(value: u64) -> Self {

@@ -25,7 +25,11 @@ use serde::{Deserialize, Serialize};
 ///
 /// Increasing q = up-left
 /// Increasing r = down
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "client", feature = "server"),
+    derive(Serialize, Deserialize)
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
     pub q: i64,
     pub r: i64,
@@ -70,7 +74,11 @@ impl Sub<Displacement> for Position {
 ///
 /// Increasing q = up-left
 /// Increasing r = down
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(
+    any(feature = "client", feature = "server"),
+    derive(Serialize, Deserialize)
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Displacement {
     pub q: i64,
     pub r: i64,

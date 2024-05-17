@@ -24,7 +24,9 @@ use crate::{vec2, EntityId, PlayerId};
 /// A stack
 ///
 /// Anything that's not an astronomical body or a warhead
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug)]
 pub struct Stack {
     pub name: String,
     pub id: EntityId,
@@ -50,7 +52,9 @@ pub struct Stack {
 macro_rules! component {
     ( $(#[$attributes:meta])* $name:ident<mass = $mass:literal> { $($fields:tt)* } ) => {
         $(#[$attributes])*
-        #[derive(Debug, Serialize, Deserialize)]
+        #[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+        #[cfg_attr(feature = "server", derive(Serialize))]
+        #[derive(Debug)]
         pub struct $name {
             pub id: EntityId,
             pub damaged: bool,
@@ -169,6 +173,15 @@ component! {
     Factory<mass = 50> {
     }
 }
+impl Factory {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+        }
+    }
+}
 
 component! {
     /// An armour plate - always damaged first (but not necessarily destroyed
@@ -181,7 +194,9 @@ component! {
 /// A warhead
 ///
 /// Deals 5 points of damage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Warhead {
     pub id: EntityId,
     pub position: vec2::Position,

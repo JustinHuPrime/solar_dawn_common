@@ -25,7 +25,9 @@ use crate::{vec2, EntityId};
 ///
 /// Represents any astronomical body that has gravity arrows; can't be landed
 /// on
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug)]
 pub struct MajorBody {
     pub name: String,
     pub id: EntityId,
@@ -37,7 +39,9 @@ pub struct MajorBody {
 ///
 /// Represents any astronomical body that doesn't have gravity arrows; may be
 /// landed on
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug)]
 pub struct MinorBody {
     pub name: String,
     pub id: EntityId,

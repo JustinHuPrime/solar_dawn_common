@@ -21,16 +21,33 @@ use serde::{Deserialize, Serialize};
 
 use crate::{stack::CargoList, vec2, EntityId};
 
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
+pub enum EconomicOrder {
+    Production(Production),
+    CargoTransfer(CargoTransfer),
+    FuelTransfer(FuelTransfer),
+    Reload(Reload),
+    FactoryRepair(FactoryRepair),
+    HabitatRepair(HabitatRepair),
+    StackTransfer(StackTransfer),
+}
+
 /// Produce a component
 ///
 /// Materials are drawn from the cargo holds in the stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Production {
     pub stack: EntityId,
     pub factory: EntityId,
     pub component: StackComponent,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub enum StackComponent {
     FuelTank,
     CargoHold,
@@ -45,7 +62,9 @@ pub enum StackComponent {
 }
 
 /// Transfer materials from one stack's cargo holds to another stack's
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct CargoTransfer {
     pub stack: EntityId,
     pub destination: EntityId,
@@ -53,7 +72,9 @@ pub struct CargoTransfer {
 }
 
 /// Transfer fuel from one stack's fuel tanks to another stack's
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct FuelTransfer {
     pub stack: EntityId,
     pub destination: EntityId,
@@ -61,14 +82,18 @@ pub struct FuelTransfer {
 }
 
 /// Reload a warhead mount using a warhead carried by the stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Reload {
     pub stack: EntityId,
     pub mount: EntityId,
 }
 
 /// Repair components using a factory
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct FactoryRepair {
     pub stack: EntityId,
     pub factory: EntityId,
@@ -76,7 +101,9 @@ pub struct FactoryRepair {
 }
 
 /// Repair a component using a habitat
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct HabitatRepair {
     pub stack: EntityId,
     pub habitat: EntityId,
@@ -84,20 +111,26 @@ pub struct HabitatRepair {
 }
 
 /// Transfer components between rendezvoused stacks or to a new stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct StackTransfer {
     pub stack: EntityId,
     pub destination: StackTransferTarget,
     pub components: Vec<EntityId>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub enum StackTransferTarget {
     Existing(EntityId),
     New(u64),
 }
 
 /// Launch a warhead from a mount
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Launch {
     pub stack: EntityId,
     pub mount: EntityId,
@@ -105,7 +138,9 @@ pub struct Launch {
 }
 
 /// Shoot a gun at another stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Shoot {
     pub stack: EntityId,
     pub gun: EntityId,
@@ -113,7 +148,9 @@ pub struct Shoot {
 }
 
 /// Burn engines
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "server", derive(Deserialize))]
+#[cfg_attr(feature = "client", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct Burn {
     pub stack: EntityId,
     pub delta: vec2::Displacement,
