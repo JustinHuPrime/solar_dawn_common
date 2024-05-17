@@ -19,6 +19,8 @@
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "server")]
+use crate::EntityIdGenerator;
 use crate::{vec2, EntityId};
 
 /// A major astronomical body
@@ -33,6 +35,25 @@ pub struct MajorBody {
     pub id: EntityId,
     pub position: vec2::Position,
     pub radius: f64,
+    pub colour: String,
+}
+impl MajorBody {
+    #[cfg(feature = "server")]
+    pub fn new(
+        name: &str,
+        id_generator: &mut EntityIdGenerator,
+        position: vec2::Position,
+        radius: f64,
+        colour: &str,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            id: id_generator.next().unwrap(),
+            position,
+            radius,
+            colour: colour.into(),
+        }
+    }
 }
 
 /// A minor astronomical body
@@ -49,6 +70,26 @@ pub struct MinorBody {
     pub radius: f64,
     pub ice_abundance: u64,
     pub ore_abundance: u64,
+}
+impl MinorBody {
+    #[cfg(feature = "server")]
+    pub fn new(
+        name: &str,
+        id_generator: &mut EntityIdGenerator,
+        position: vec2::Position,
+        radius: f64,
+        ice_abundance: u64,
+        ore_abundance: u64,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            id: id_generator.next().unwrap(),
+            position,
+            radius,
+            ice_abundance,
+            ore_abundance,
+        }
+    }
 }
 
 #[cfg(test)]

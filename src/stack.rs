@@ -17,8 +17,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "server")]
+use crate::EntityIdGenerator;
 use crate::{vec2, EntityId, PlayerId};
 
 /// A stack
@@ -34,15 +38,43 @@ pub struct Stack {
     pub velocity: vec2::Displacement,
     pub owner: PlayerId,
 
-    pub fuel_tanks: Vec<FuelTank>,
-    pub cargo_holds: Vec<CargoHold>,
-    pub engines: Vec<Engine>,
-    pub guns: Vec<Gun>,
-    pub launch_clamps: Vec<WarheadMount>,
-    pub habitats: Vec<Habitat>,
-    pub miners: Vec<Miner>,
-    pub factories: Vec<Factory>,
-    pub armour_plates: Vec<ArmourPlate>,
+    pub fuel_tanks: HashMap<EntityId, FuelTank>,
+    pub cargo_holds: HashMap<EntityId, CargoHold>,
+    pub engines: HashMap<EntityId, Engine>,
+    pub guns: HashMap<EntityId, Gun>,
+    pub launch_clamps: HashMap<EntityId, WarheadMount>,
+    pub habitats: HashMap<EntityId, Habitat>,
+    pub miners: HashMap<EntityId, Miner>,
+    pub factories: HashMap<EntityId, Factory>,
+    pub armour_plates: HashMap<EntityId, ArmourPlate>,
+}
+impl Stack {
+    #[cfg(feature = "server")]
+    pub fn new(
+        name: &str,
+        id_generator: &mut EntityIdGenerator,
+        position: vec2::Position,
+        velocity: vec2::Displacement,
+        owner: PlayerId,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            id: id_generator.next().unwrap(),
+            position,
+            velocity,
+            owner,
+
+            fuel_tanks: HashMap::new(),
+            cargo_holds: HashMap::new(),
+            engines: HashMap::new(),
+            guns: HashMap::new(),
+            launch_clamps: HashMap::new(),
+            habitats: HashMap::new(),
+            miners: HashMap::new(),
+            factories: HashMap::new(),
+            armour_plates: HashMap::new(),
+        }
+    }
 }
 
 /// Create a component type
@@ -70,9 +102,18 @@ component! {
     /// A fuel tank - holds fuel
     ///
     /// 20 points of fuel capacity
-    #[derive(Clone)]
     FuelTank<mass = 1> {
         pub fuel: u64,
+    }
+}
+impl FuelTank {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+            fuel: 0,
+        }
     }
 }
 
@@ -80,20 +121,41 @@ component! {
     /// A cargo hold - holds non-fuel items
     ///
     /// 20 points of cargo capacity
-    #[derive(Clone)]
     CargoHold<mass = 1> {
         pub inventory: CargoList,
+    }
+}
+impl CargoHold {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+            inventory: CargoList::new(0, 0, 0, 0),
+        }
     }
 }
 /// A collection of items held in a cargo hold
 ///
 /// More-or-less an inventory, but also used in transfer orders
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(any(feature = "client", feature = "server"), derive(Deserialize))]
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[derive(Debug, Clone)]
 pub struct CargoList {
     pub ice: u64,
     pub ore: u64,
     pub materials: u64,
     pub warheads: u64,
+}
+impl CargoList {
+    pub fn new(ice: u64, ore: u64, materials: u64, warheads: u64) -> Self {
+        Self {
+            ice,
+            ore,
+            materials,
+            warheads,
+        }
+    }
 }
 
 component! {
@@ -104,8 +166,16 @@ component! {
     /// burn takes 1 point of fuel / engine needed to make up the TWR
     ///
     /// excess thrust allows for larger deltas
-    #[derive(Clone)]
     Engine<mass = 5> {
+    }
+}
+impl Engine {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+        }
     }
 }
 
@@ -117,8 +187,16 @@ component! {
     /// hex away, guaranteed to hit at 0 hexes away; hit chance follows the
     /// inverse-fourth-power relationship (2 hexes = (2/3)^4 = ~0.20 hit
     /// chance)
-    #[derive(Clone)]
     Gun<mass = 5> {
+    }
+}
+impl Gun {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+        }
     }
 }
 
@@ -128,9 +206,18 @@ component! {
     /// During the ordnance phase, any number of clamps may be ordered to
     /// launch their held warhead (provide a delta-v of up to 1 hex/turn).
     /// Reloading requires an economic phase action.
-    #[derive(Clone)]
     WarheadMount<mass = 1> {
         pub loaded: bool,
+    }
+}
+impl WarheadMount {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+            loaded: false,
+        }
     }
 }
 
@@ -142,9 +229,18 @@ component! {
     ///
     /// Additionally serves as a source of control; you gain control of
     /// anything in the same stack as one of your habitats
-    #[derive(Clone)]
     Habitat<mass = 10> {
         pub owner: PlayerId
+    }
+}
+impl Habitat {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator, owner: PlayerId) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+            owner,
+        }
     }
 }
 
@@ -153,8 +249,16 @@ component! {
     ///
     /// At the start of each economic phase, produces the resources specified
     /// by the body's resource abundances
-    #[derive(Clone)]
     Miner<mass = 10> {
+    }
+}
+impl Miner {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+        }
     }
 }
 
@@ -169,7 +273,6 @@ component! {
     ///  - convert any amount of ice into fuel at 2:1
     ///  - repair any number of components in a single stack (costs 1 point of
     ///    materials per component repaired)
-    #[derive(Clone)]
     Factory<mass = 50> {
     }
 }
@@ -186,8 +289,16 @@ impl Factory {
 component! {
     /// An armour plate - always damaged first (but not necessarily destroyed
     /// first)
-    #[derive(Clone)]
     ArmourPlate<mass = 5> {
+    }
+}
+impl ArmourPlate {
+    #[cfg(feature = "server")]
+    pub fn new(id_generator: &mut EntityIdGenerator) -> Self {
+        Self {
+            id: id_generator.next().unwrap(),
+            damaged: false,
+        }
     }
 }
 

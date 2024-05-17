@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 
 /// An axial, hex-grid, point-up 2-d vector position
 ///
-/// Increasing q = up-left
+/// Increasing q = up-right
 /// Increasing r = down
 #[cfg_attr(
     any(feature = "client", feature = "server"),
@@ -37,6 +37,17 @@ pub struct Position {
 impl Position {
     pub fn new(q: i64, r: i64) -> Self {
         Self { q, r }
+    }
+}
+impl From<(f64, f64)> for Position {
+    fn from(value: (f64, f64)) -> Self {
+        let coordinates = rect_to_hex(value.0, value.1);
+        Self::new(coordinates.0, coordinates.1)
+    }
+}
+impl From<Position> for (f64, f64) {
+    fn from(value: Position) -> Self {
+        hex_to_rect(value.q, value.r)
     }
 }
 impl AddAssign<Displacement> for Position {
@@ -72,7 +83,7 @@ impl Sub<Displacement> for Position {
 
 /// An axial, hex-grid, point-up 2-d vector displacement
 ///
-/// Increasing q = up-left
+/// Increasing q = up-right
 /// Increasing r = down
 #[cfg_attr(
     any(feature = "client", feature = "server"),
@@ -86,6 +97,20 @@ pub struct Displacement {
 impl Displacement {
     pub fn new(q: i64, r: i64) -> Self {
         Self { q, r }
+    }
+    pub fn norm(&self) -> u64 {
+        (self.q.unsigned_abs() + self.r.unsigned_abs() + (self.q + self.r).unsigned_abs()) / 2
+    }
+}
+impl From<(f64, f64)> for Displacement {
+    fn from(value: (f64, f64)) -> Self {
+        let coordinates = rect_to_hex(value.0, value.1);
+        Self::new(coordinates.0, coordinates.1)
+    }
+}
+impl From<Displacement> for (f64, f64) {
+    fn from(value: Displacement) -> Self {
+        hex_to_rect(value.q, value.r)
     }
 }
 impl Neg for Displacement {
@@ -172,6 +197,36 @@ impl Div<i64> for Displacement {
         let mut value = self;
         value /= rhs;
         value
+    }
+}
+
+/// convert to rectangular coordinates
+fn hex_to_rect(q: i64, r: i64) -> (f64, f64) {
+    (
+        3.0_f64.sqrt() * q as f64 + 3.0_f64.sqrt() / 2.0 * r as f64,
+        3.0 / 2.0 * r as f64,
+    )
+}
+/// convert from rectangular coordinates
+fn rect_to_hex(x: f64, y: f64) -> (i64, i64) {
+    let q_frac = 3.0_f64.sqrt() * x - 1.0 / 3.0 * y;
+    let r_frac = 2.0 / 3.0 * y;
+    let s_frac = -q_frac - r_frac;
+
+    let q = q_frac.round();
+    let r = r_frac.round();
+    let s = s_frac.round();
+
+    let q_diff = (q_frac - q).abs();
+    let r_diff = (r_frac - r).abs();
+    let s_diff = (s_frac - s).abs();
+
+    if q_diff > r_diff && q_diff > s_diff {
+        ((-r - s) as i64, r as i64)
+    } else if r_diff > s_diff {
+        (q as i64, (-q - s) as i64)
+    } else {
+        (q as i64, r as i64)
     }
 }
 
